@@ -1,0 +1,7 @@
+# Core Application Dependencies
+matplotlib
+xlsxwriter
+reportlab
+bcrypt
+holidays
+tkcalendar
