@@ -26,3 +26,6 @@ Thumbs.db
 
 # Backups (Usually not committed to repo)
 backups/
+
+#scrpt
+script.txt
