@@ -168,8 +168,15 @@ class CustomerSelector(tk.Toplevel):
             em = self.entries_new['email'].get().strip()
             ph = self.entries_new['phone'].get().strip()
             
-            if not fn or not ln or not em: 
-                return messagebox.showwarning("Προσοχή", "Παρακαλώ συμπληρώστε Όνομα, Επώνυμο και Email.")
+            if not fn or not ln or not em or not ph:
+                return messagebox.showwarning("Προσοχή", "Παρακαλώ συμπληρώστε Όνομα, Επώνυμο, Τηλέφωνο και Email.")
+
+            if len(ph)<10:
+                return messagebox.showwarning("Προσοχή", "Παρακαλώ εισάγετε έγκυρο τηλέφωνο.")
+
+            if "@" not in em or "." not in em:
+                messagebox.showwarning("Σφάλμα", "Το e-mail δεν φαίνεται έγκυρο!")
+                return
 
             # 1. ΕΛΕΓΧΟΣ EMAIL: Αν υπάρχει, σταματάμε (return)
             try:
@@ -432,13 +439,24 @@ class CalendarView(tk.Frame):
         self.tree.tag_configure("available", foreground="#27ae60")
         self.tree.tag_configure("closed", foreground="#95a5a6", font=("Arial", 10, "italic"))
 
-        # Σύνδεση συμβάντων ποντικιού
         self.tree.bind("<Button-1>", self.on_single_click)
-        self.tree.bind("<Double-1>", self.on_double_click)
-        self.tree.bind("<Button-3>", self.on_right_click)
+        self.tree.bind("<Double-1>", self.on_right_click)
         self._appt_map = {} # Maps tree item to appt_id
 
         self.display_available_slots()
+
+    def on_single_click(self, event):
+        # Βρίσκω τη γραμμή που επιλεγχθηκε από το χρήστη
+        item = self.tree.identify_row(event.y)
+        if not item:
+            return
+
+        # Ελέγχω αν η γραμμή αυτή έχει slot με ραντεβού
+        if self.tree.get_children(item):
+            # Παίρνω την τρέχουσα κατάσταση (αν είναι True=ανοιχτό ή False=κλειστό)
+            is_open = self.tree.item(item, "open")
+            # Αλλάζω την κατάσταση στο αντίθετο (Toggle)
+            self.tree.item(item, open=not is_open)
 
     def alert_error(self, msg): messagebox.showerror("Σφάλμα", msg)
     def alert_info(self, msg): messagebox.showinfo("Πληροφορία", msg)
@@ -560,50 +578,37 @@ class CalendarView(tk.Frame):
                     tags=("booked",))
                 self._appt_data[child_item] = a
 
-    def on_single_click(self, event):
-        """Μονό κλικ: Ανάπτυξη/σύμπτυξη (expand/collapse) του timeslot."""
-        item = self.tree.identify_row(event.y)
-        if not item:
-            return
-
-        # Έλεγχος αν η γραμμή είναι timeslot (parent row)
-        if self.tree.parent(item) == "":
-            is_open = self.tree.item(item, "open")
-            # Αντιστροφή της κατάστασης ανοίγματος (open/close)
-            self.tree.item(item, open=not is_open)
-
+    
     def on_double_click(self, event):
-        """Διπλό κλικ: Άνοιγμα παραθύρου επεξεργασίας αν είναι ραντεβού, ή κράτησης αν είναι timeslot."""
         item = self.tree.identify_row(event.y)
-        if not item:
-            return
-
-        # Θέτουμε την επιλογή στη γραμμή που έγινε το διπλό κλικ
-        self.tree.selection_set(item)
+        if not item: return
         val = self.tree.item(item, "values")
-        if not val:
-            return
-
-        # Έλεγχος αν είναι timeslot (parent row) ή κλεισμένο ραντεβού (child row)
-        if self.tree.parent(item) == "":
-            # Διπλό κλικ σε timeslot -> Άνοιγμα παραθύρου για κράτηση νέου ραντεβού
-            clean_slot = str(val[1])
+        
+        # Αν πατήσει στην κύρια γραμμή (που έχει το [ + ])
+        if "[ + ]" in str(val[0]):
+            clean_slot = str(val[0]).replace("[ + ]", "").strip()
             
             # Δυναμικό όριο βάσει ενεργών υπαλλήλων
             active_emp_count = len(database.get_active_employees())
             limit = max(1, active_emp_count)
 
-            # Έλεγχος αν έχουμε ήδη το όριο των ατόμων στο slot
+            # Έλεγχος αν έχουμε ήδη το όριο των ατόμων
             children = self.tree.get_children(item)
             if len(children) >= limit:
-                messagebox.showwarning("Πλήρες", f"Το slot είναι γεμάτο ({limit} ραντεβού)!")
-                return 
+                return messagebox.showwarning("Πλήρες", f"Το slot έχει συμπληρώσει τα {limit} ραντεβού.")
 
+            
+            # 1. Δημιουργούμε το παράθυρο και το αποθηκεύουμε σε μια μεταβλητή (win)
             win = CustomerSelector(self, None)
-            win.callback = lambda cid, eid, notes: self.confirm_booking(clean_slot, cid, eid, notes, win)
-        else:
-            # Διπλό κλικ σε κλεισμένο ραντεβού -> Άνοιγμα παραθύρου επεξεργασίας
-            self.edit_selected_appointment()
+            
+            # 2. Περνάμε το 'win' μέσα στην confirm_booking για να ξέρει ποιο να κλείσει
+            win.callback = lambda cid, eid, notes: self.confirm_booking(
+                clean_slot, cid, eid, notes, win
+            )
+            
+        # Αν πατήσει στο [ - ] μέσα στην ώρα
+        elif "[ - ]" in str(val[0]):
+            self.delete_selected_appointment()
 
 
     def confirm_booking(self, slot_range, customer_id, employee_id, notes, popup_window):
@@ -964,22 +969,3 @@ def get_all_appointments_historical():
     finally:
         conn.close()
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Σύστημα Ραντεβού v1.0")
-    root.geometry("1000x850")
-
-    # Δημιουργία του Notebook (Tab Control)
-    notebook = ttk.Notebook(root)
-    notebook.pack(expand=True, fill="both")
-
-    # Tab 1: Ημερολόγιο
-    tab1 = CalendarView(notebook)
-    notebook.add(tab1, text="  Ημερήσιο Πρόγραμμα  ")
-
-    # Tab 2: Αναζήτηση
-    tab2 = AppointmentSearch(notebook)
-    notebook.add(tab2, text="  Αναζήτηση Ραντεβού  ")
-
-
-    root.mainloop()

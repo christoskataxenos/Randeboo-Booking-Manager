@@ -14,8 +14,12 @@ import tkinter as tk
 from tkinter import ttk
 import database
 from tkinter import messagebox
+import gui_customers
 
 # H βασική κλάση που χτίζει την οθόνη διαχείρισης χρηστών
+# Επέλεξα να μην την κάνω υποκλάση της gui_customers.CustomersWindow γιατί με δυσκόλευε το γεγονός ότι ο πίνακας
+# των δύο παραθύρων έχει διαφορετικό αριθμό στηλών. Αυτό έχει ως συνεπεια να πρέπει να μπω σε διαδικασία destroy
+# και create από την αρχή. Παράλληλα το Live Search θα είχε και αυτό δυσκολία καθώς απαιτεί ξεχωριστό query
 class UsersWindow:
     def __init__(self,parent,user):
         self.parent = parent
@@ -30,12 +34,11 @@ class UsersWindow:
         self.color_border = "#E5E9F0"
         self.parent.configure(bg=self.color_bg)
 
-        # MAIN CONTENT AREA: Η κεντρική περιοχή προβολής
+        # Η κεντρική περιοχή του frame
         self.content_frame = tk.Frame(self.parent, bg=self.color_bg, padx=30, pady=2)
         self.content_frame.pack(side="right", expand=True, fill="both")
 
-        # Header: Καλωσόρισμα
-        # UI_SECTION: Header
+        # Header
         self.header = tk.Frame(self.content_frame, bg=self.color_bg)
         for i in range (4):
             self.content_frame.columnconfigure(i, weight=1)
@@ -44,7 +47,6 @@ class UsersWindow:
         welcome_text = f"Διαχείριση Χρηστών του RandeBoo!"
         tk.Label(self.header, text=welcome_text, font=("Arial", 20, "bold"), bg=self.color_bg, fg=self.color_sidebar).pack(side="left")
 
-        # UI_SECTION: Search Bar & Filters with Shadow
         self.search_shadow = tk.Frame(self.content_frame, bg="#E1E8EE")
         self.search_shadow.grid(row=1, column=0, rowspan=2, columnspan=4, sticky="nsew", padx=0, pady=0)
         
@@ -85,7 +87,6 @@ class UsersWindow:
         self.border_bg_2.lower()
 
         # Εδώ δηλώνω το container του πίνακα με τους πελάτες. Βοηθάει στη στοίχιση και στο styling
-        # UI_SECTION: User List Table (Treeview)
         self.table_container, self.table=self.show_table(self.content_frame)
         self.table_container.grid(row=3, column=0, columnspan=4, sticky="nsew", padx=10, pady=30)
 
@@ -98,7 +99,6 @@ class UsersWindow:
         self.table.tag_configure('hover', background='#B3E5FC')
 
         # Εδώ δηλώνω το container των κουμπιών. Βοηθάει στη στοίχιση και στο styling
-        # UI_SECTION: Action Buttons (Add, Update, Delete)
         self.button_container = tk.Frame(self.content_frame, bg=self.color_bg, padx=30, pady=2)
         self.button_container.grid(row=4, column=0, columnspan=4, sticky="nsew")
         # To weight στις κολώνες 2 και 3 βοηθάει ώστε να σπρώχνω το κουμπί της Διαγραφής (κολώνα 4) τέρμα δεξιά
@@ -150,18 +150,18 @@ class UsersWindow:
         tree.column("email", width=90,anchor="center")
         tree.column("phone", width=60, anchor="center")
         tree.column("is_active", width=40, anchor="center")
-        tree.pack(side="left", fill="both" ,expand=True)  # UI_LAYOUT
+        tree.pack(side="left", fill="both" ,expand=True)
 
         # Δηλώνω τη scrollbar του πίνακα, σε περίπτωση που έχει περισσότερα από 15 αποτελέσματα
         # να δείξει(τόσα εχω ορίσει με το height παραπάνω)
         scrollbar = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         tree.configure(yscrollcommand=scrollbar.set)
-        tree.grid(row=0, column=0, sticky="nsew")  # UI_LAYOUT
-        scrollbar.grid(row=0, column=1, sticky="ns")  # UI_LAYOUT
+        tree.grid(row=0, column=0, sticky="nsew")
+        scrollbar.grid(row=0, column=1, sticky="ns")
 
         # Μορφοποιώ με διαφορετικό χρώμα ανά γραμμή σύμφωνα με το tag που έχει πάρει από την _load_user()
-        tree.tag_configure('oddrow', background='#FFFFFF')  # UI_COLOR
-        tree.tag_configure('evenrow', background='#D9E2EC')  # UI_COLOR
+        tree.tag_configure('oddrow', background='#FFFFFF')
+        tree.tag_configure('evenrow', background='#D9E2EC')
 
         return container,tree
 
@@ -311,103 +311,92 @@ class UsersWindow:
 
             self.last_hovered_item = item
 
-
-
-# Kλάση για το παράθυρο καταχώρησης πελάτη
-class AddUserWindow:
+# Kλάση για το παράθυρο καταχώρησης πελάτη. Κληρονομεί το παράθυρο προσθήκης πελατών από το gui_customer.py
+class AddUserWindow(gui_customers.AddCustomerWindow):
     def __init__(self, parent):
-        # Ορίζω το παράθυρο
-        self.window = tk.Toplevel(parent)
-        self.window.transient(parent)
-        self.window.grab_set()
-        self.window.focus_force()
+        # Καλώ το constructor των πελατών που φτιάχνει νέο παράθυρο με πεδία: Όνομα, Επώνυμο, Τηλέφωνο & Email
+        super().__init__(parent)
 
-        # Κεντράρω το παράθυρο στο κέντρο της οθόνης και βάζω κάποια βασικά χρώματα και ρυθμίσεις
+        # Αλλάζω τίτλους και το command του κουμπιού (χρήστης αντί πελάτης)
         self.window.title("Προσθήκη Χρήστη")
-        window_width = 1024
-        window_height = 768
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-        center_x = int(screen_width / 2 - window_width / 2)
-        center_y = int(screen_height / 2 - window_height / 2)
-        self.window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-        self.window.resizable(False, False)
-        self.window.configure(bg="#F7F9FC")  # UI_COLOR
-        self.color_accent = "#1E90FF"  # UI_COLOR
+        self.lbl.config(text="Καταχώρηση Νέου Χρήστη")
+        self.btn_add.configure(text="Καταχώρηση Νέου Χρήστη", command=self._add_user)
 
-        # Δήλωση βασικού label
-        self.lbl=tk.Label(self.window, text="Καταχώρηση Νέου Χρήστη", font=("Arial", 14, "bold"), bg="white", fg="#0A3D62")  # UI_COLOR  # UI_FONT
-        self.lbl.pack(pady=20)  # UI_LAYOUT
-        main_frame = tk.Frame(self.window, bg="white", padx=20)  # UI_COLOR  # UI_SECTION
-        main_frame.pack(fill="both", expand=True)  # UI_LAYOUT
+        # Επειδή η winfo_children() επιστρέφει λίστα από τα περιεχόμενα που εχουν γίνει pack ή grid στη μαμά κλάση.
+        # Εγώ επιλέγω το στοιχείο [1] που είναι το main_frame (στοιχείο [0] είναι το label)
+        main_frame = self.window.winfo_children()[1]
 
-        # Πεδία για την καταχώρηση των στοιχείων του χρήστη
-        tk.Label(main_frame, text="Όνομα", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_name = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_name.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        self.ent_name.focus_set()
-        tk.Label(main_frame, text="Επώνυμο", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_lastname = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_lastname.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        tk.Label(main_frame, text="UserName", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_username = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_username.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        tk.Label(main_frame, text="Password", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_password = tk.Entry(main_frame, font=("Arial", 11), relief="flat",show="*", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_password.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        tk.Label(main_frame, text="Τηλέφωνο", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_phone = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_phone.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        tk.Label(main_frame, text="Ρόλος", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_role = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_role.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        tk.Label(main_frame, text="e-mail", bg="white").pack(anchor="w")  # UI_COLOR  # UI_LAYOUT
-        self.ent_email= tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")  # UI_FONT
-        self.ent_email.pack(fill="x", pady=(0, 10))  # UI_LAYOUT
-        # Μεταβλητή που κρατάει το status του checkbox
+        # Βγάζω το κουμπί από το pack για να μπουν τα νέα πεδία από πάνω του. Αργότερα θα το ξαναβάλω
+        self.btn_add.pack_forget()
+
+        # Προσθέτω τα έξτρα πεδία που χρειάζεται ένας Χρήστης και που δεν υπήρχαν στη
+        # μαμά κλαση για να τα κληρονομήσει εδώ.
+        tk.Label(main_frame, text="UserName", bg="white").pack(anchor="w")
+        self.ent_username = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1,
+                                     highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
+        self.ent_username.pack(fill="x", pady=(0, 10))
+
+        tk.Label(main_frame, text="Password", bg="white").pack(anchor="w")
+        self.ent_password = tk.Entry(main_frame, font=("Arial", 11), relief="flat", show="*", highlightthickness=1,
+                                     highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
+        self.ent_password.pack(fill="x", pady=(0, 10))
+
+        tk.Label(main_frame, text="Ρόλος", bg="white").pack(anchor="w")
+        self.ent_role = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1,
+                                 highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
+        self.ent_role.pack(fill="x", pady=(0, 10))
+
+        # Προσθήκη του Checkbox για το Activation ή όχι του χρήστη (default τιμή να είναι ενεργός)
         self.user_activation = tk.BooleanVar(value=True)
-        self.check_is_active = tk.Checkbutton(main_frame, text="Ενεργοποίηση Χρήστη",variable=self.user_activation, bg="white", font=("Arial", 10, "bold"))
+        self.check_is_active = tk.Checkbutton(main_frame, text="Ενεργοποίηση Χρήστη", variable=self.user_activation,
+                                              bg="white", font=("Arial", 10, "bold"))
         self.check_is_active.pack(pady=10)
-        # Το κουμπί της καταχώρησης
-        self.btn_add = tk.Button(main_frame, text="Καταχώρηση Νέου Χρήστη", command=self._add_user, bg=self.color_accent, fg="white", font=("Arial", 10, "bold"),relief="flat", cursor="hand2", pady=5)  # UI_COLOR  # UI_FONT  # UI_BUTTON
-        self.btn_add.pack(fill="x", pady=(30, 10))  # UI_LAYOUT
 
-        # Ορίζω να καλείται η _add_user() με enter όταν είναι ο κέρσορας στα πεδία αυτα
-        self.ent_name.bind('<Return>', lambda event: self._add_user())
-        self.ent_lastname.bind('<Return>', lambda event: self._add_user())
+        # Ξαναβάζω το κουμπί στο κάτω μέρος της οθόνης
+        self.btn_add.pack(fill="x", pady=(30, 10))
+
+        # Bindings για το update. Παρόλο που ορίζονται στη μαμά κλάση τα κάνω rebind για να εκτελείται η σωστή συνάρτηση
         self.ent_username.bind('<Return>', lambda event: self._add_user())
         self.ent_password.bind('<Return>', lambda event: self._add_user())
         self.ent_role.bind('<Return>', lambda event: self._add_user())
+        self.ent_name.bind('<Return>', lambda event: self._add_user())
+        self.ent_lastname.bind('<Return>', lambda event: self._add_user())
+        self.ent_phone.bind('<Return>', lambda event: self._add_user())
         self.ent_email.bind('<Return>', lambda event: self._add_user())
-        self.window.bind('<Escape>', lambda event: self.window.destroy())
-
 
     # Συνάρτηση για την προσθήκη του νέου χρήστη
     def _add_user(self):
-        # Διαβάζω τα στοιχεία από τα text boxes
+        # Διαβάζω τα στοιχεία από τα text boxes αφού εχω καθαρίσει τα κενα στην αρχή και στο τέλος του κειμένου
         name = self.ent_name.get().strip()
         lastname = self.ent_lastname.get().strip()
         username = self.ent_username.get().strip()
         password=self.ent_password.get().strip()
         role= self.ent_role.get().strip()
-        email = self.ent_email.get().strip()
+        email2 = self.ent_email.get().strip()
         phone = self.ent_phone.get().strip()
+        # Παίρνω το status του checkbox και το μετατρέπω σε τιμή για να το βάλω στη βάση
         if self.user_activation.get():
             is_active=1
         else:
             is_active=0
 
         # Αν δεν είναι τα υποχρεωτικά πεδία συμπληρωμένα βγαίνει popup message
-        if not name or not lastname or not email or not username or not password:
+        if not name or not lastname or not email2 or not username or not password:
             messagebox.showwarning("Προσοχή", "Το Όνομα, το Επώνυμο, το Username, o Κωδικός και το Email είναι υποχρεωτικά.", parent=self.window)
             return
-        # Αν δεν εμπεριέχει τους χαρακτήρες @ . το email θα βγει σχετικό μήνυμα
-        if "@" not in email or "." not in email:
+        # Αν δεν εμπεριέχει τους χαρακτήρες @ . το email2 θα βγει σχετικό μήνυμα
+        if "@" not in email2 or "." not in email2:
             messagebox.showwarning("Σφάλμα", "Το e-mail δεν φαίνεται έγκυρο!", parent=self.window)
             return
         if not role:
             # Αν δε δηλωθεί ρόλος κατά την εισαγωγή δίνεται default ρολος ως χρήστης
             self.ent_role=2
+        elif role != '1' and role !='2':
+            messagebox.showwarning("Σφάλμα", "O ρόλος μπορεί να είναι 1 για admin και 2 για χρήστη.", parent=self.window)
+            return
+        if len(phone)<10 or len(phone) >10:
+            messagebox.showwarning("Σφάλμα", "Το τηλέφωνο δεν φαίνεται έγκυρο!", parent=self.window)
+            return
 
         if len(password) < 6:
             messagebox.showerror(
@@ -419,7 +408,7 @@ class AddUserWindow:
 
         # Error handling για την επικοινωνία με τη βάση
         try:
-            database.create_user(username, password, role, name, lastname, email, phone, is_active)
+            database.create_user(username, password, role, name, lastname, email2, phone, is_active)
             messagebox.showinfo("Επιτυχία", "Ο χρήστης προστέθηκε επιτυχώς!", parent=self.window)
             self.window.destroy()
             return
@@ -428,8 +417,7 @@ class AddUserWindow:
 
 # Υποκλάση που στηρίζεται στην AddUserWindow και σκοπός της είναι η δημιουργία παραθύρου για το update των στοιχείων του χρήστη
 class UpdateUserWindow(AddUserWindow):
-    def __init__(self, parent,user_data):
-
+    def __init__(self, parent, user_data):
         # Φτιάχνω παράθυρο από την υπερκλάση
         super().__init__(parent)
 
@@ -442,31 +430,32 @@ class UpdateUserWindow(AddUserWindow):
         self.ent_name.insert(0, user_data[1])
         self.ent_lastname.insert(0, user_data[2])
         self.ent_username.insert(0, user_data[3])
-        self.ent_phone.insert(0, user_data[6])
         self.ent_role.insert(0, user_data[4])
         self.ent_email.insert(0, user_data[5])
-        status=user_data[7]
+        self.ent_phone.insert(0, user_data[6])
+        status = user_data[7]
         # Έλεγχω αν είναι ενεργός ο χρήστης ώστε να γίνει σωστή απεικόνιση στο checkbox
         if status == "Ενεργός":
             self.user_activation.set(True)
         else:
             self.user_activation.set(False)
 
-        # Button για την ενημέρωση στοιχείων
+        # Button για την ενημέρωση στοιχείων. Αλλάζω το command που τρέχει η μαμά υπερκλάση
+        # Με τη .configure() πετυχαίνω να αλλάξω τις ιδιότητές του κουμπιού (το command στην προκειμένη περίπτωση)
         self.btn_add.configure(text="Ενημέρωση στοιχείων", command=self._do_update_user)
 
-        # Ορίζω να καλείται η _do_update_user() με enter όταν είναι ο κέρσορας στα πεδία αυτα
+        # Bindings για το update. Παρόλο που ορίζονται στη μαμά κλάση τα κάνω rebind για να εκτελείται η σωστή συνάρτηση
         self.ent_name.bind('<Return>', lambda event: self._do_update_user())
         self.ent_lastname.bind('<Return>', lambda event: self._do_update_user())
         self.ent_username.bind('<Return>', lambda event: self._do_update_user())
         self.ent_email.bind('<Return>', lambda event: self._do_update_user())
         self.ent_role.bind('<Return>', lambda event: self._do_update_user())
         self.ent_phone.bind('<Return>', lambda event: self._do_update_user())
-        self.window.bind('<Escape>', lambda event: self.window.destroy())
 
     # Συνάρτηση που εκτελεί το update των στοιχείων του χρήστη
     def _do_update_user(self):
 
+        # Περνάω τις τιμές σε τοπικές μεταβλητές
         name = self.ent_name.get()
         lastname = self.ent_lastname.get()
         username = self.ent_username.get()
@@ -489,8 +478,7 @@ class UpdateUserWindow(AddUserWindow):
             messagebox.showwarning("Σφάλμα", "Το e-mail δεν φαίνεται έγκυρο!", parent=self.window)
             return
 
-
-        # Μόνο αν έχει αλλαχθεί το password να γίνεται έλεγχος για το μήκος. Διαφορετικά να μη πειράζεται το password.
+        # Μόνο αν έχει αλλαχθεί το password να γίνεται έλεγχος για το μήκος. Διαφορετικά να μην πειράζεται το password.
         if password:
             if len(password) < 6:
                 messagebox.showerror(
@@ -500,10 +488,19 @@ class UpdateUserWindow(AddUserWindow):
                 )
             return
 
+        if not role_id:
+            # Αν δε δηλωθεί ρόλος κατά την εισαγωγή δίνεται default ρολος ως χρήστης
+            self.ent_role=2
+        elif role_id != '1' and role_id !='2':
+            messagebox.showwarning("Σφάλμα", "O ρόλος μπορεί να είναι 1 για admin και 2 για χρήστη.", parent=self.window)
+            return
+        if len(phone)<10 or len(phone) >10:
+            messagebox.showwarning("Σφάλμα", "Το τηλέφωνο δεν φαίνεται έγκυρο!", parent=self.window)
+            return
+
         # Error handling για την επικοινωνία με τη βάση
         try:
             # Καλώ τη συνάρτηση update από τη βάση
-
             database.update_user(self.user_id, username, name, lastname, phone, email, role_id, is_active)
             messagebox.showinfo("Επιτυχία", "Η ενημέρωση ολοκληρώθηκε!", parent=self.window)
             self.window.destroy()  # Κλείνουμε το παράθυρο

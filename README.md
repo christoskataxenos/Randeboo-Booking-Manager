@@ -55,7 +55,7 @@
 
 ## Δομή Αρχείων Έργου (Project Structure)
 
-Η δομή του φακέλου `Finalized_files` έχει ως εξής:
+Η δομή του project έχει ως εξής:
 
 ```text
 Finalized_files/
@@ -68,7 +68,7 @@ Finalized_files/
 │   ├── search.py                               # Λογική ενοποιημένης αναζήτησης ραντεβού
 │   ├── email_service.py                        # SMTP email client & παραγωγή αρχείων iCalendar (.ics)
 │   ├── export_data.py                          # Μηχανισμός εξαγωγής δεδομένων σε Excel, PDF και CSV
-│   ├── gui_main.py                             # Κεντρικό Dashboard, Navigation & Sidebar widgets
+│   ├── gui_main.py                             # Κεντρικό Dashboard, Navigation & Sidebar
 │   ├── gui_login.py                            # Οθόνη σύνδεσης, ταυτοποίηση & αλλαγή κωδικού
 │   ├── gui_customers.py                        # Διαχείριση πελατών (CRUD UI)
 │   ├── gui_employees.py                        # Διαχείριση προσωπικού (CRUD UI)
@@ -90,8 +90,8 @@ Finalized_files/
 
 | Μέλος Ομάδας | Αρχεία Κώδικα | Κύριες Ευθύνες & Λειτουργίες |
 | :--- | :--- | :--- |
-| **Καναβού Καλλιόπη** | `gui_appointments.py`<br>`gui_stats.py`<br>`gui_quick_booking.py` | Σχεδιασμός και μοντελοποίηση της σχεσιακής βάσης δεδομένων, διαχείριση ημερήσιων ραντεβού, χρονοθυρίδων (slots) και διαθεσιμότητας (capacity control), ενσωμάτωση δυναμικών γραφημάτων Matplotlib και υλοποίηση του αναδυόμενου παραθύρου γρήγορης κράτησης. |
-| **Καταξένος Χρήστος** | `database.py`<br>`gui_main.py`<br>`gui_settings.py`<br>`backup.py`<br>`main.py`<br>`email_service.py` | Υλοποίηση SQLite schema & βασικών CRUD ερωτημάτων, ανάπτυξη του κεντρικού Dashboard, του Sidebar πλοήγησης και των live widgets, υλοποίηση του συστήματος ρυθμίσεων (Business/Schedule/SMTP), ανάπτυξη του engine λήψης backup και Safe Mode Recovery. Σχεδιασμός UI/UX ταυτότητας, καθώς και συμμετοχή στην υλοποίηση του μηχανισμού αποστολής email. |
+| **Καναβού Καλλιόπη** | `gui_appointments.py`<br>`gui_stats.py` | Σχεδιασμός και μοντελοποίηση της σχεσιακής βάσης δεδομένων, διαχείριση ημερήσιων ραντεβού, χρονοθυρίδων (slots) και διαθεσιμότητας (capacity control), καθώς και ενσωμάτωση δυναμικών γραφημάτων Matplotlib. |
+| **Καταξένος Χρήστος** | `database.py`<br>`gui_main.py`<br>`gui_settings.py`<br>`backup.py`<br>`main.py`<br>`email_service.py`<br>`gui_quick_booking.py` | Υλοποίηση SQLite schema & βασικών CRUD ερωτημάτων, ανάπτυξη του κεντρικού Dashboard και του Sidebar πλοήγησης, υλοποίηση του συστήματος ρυθμίσεων (Business/Schedule/SMTP), ανάπτυξη του engine λήψης backup και Safe Mode Recovery. Σχεδιασμός UI/UX ταυτότητας, συμμετοχή στην υλοποίηση του μηχανισμού αποστολής email, καθώς και υλοποίηση του αναδυόμενου παραθύρου γρήγορης κράτησης. |
 | **Ασπρίδης Δημήτρης** | `gui_login.py`<br>`gui_customers.py`<br>`gui_users.py` | Σχεδιασμός και υλοποίηση της οθόνης ταυτοποίησης χρηστών (Login) με σύστημα ρόλων, ενσωμάτωση κρυπτογράφησης bcrypt στο `database.py`, ανάπτυξη της CRUD διαχείρισης πελατών με live filtering, καθώς και συμμετοχή στην ανάπτυξη του panel διαχείρισης χρηστών. |
 | **Βαρθαλίτης Πάνος** | `search.py`<br>`gui_search.py`<br>`export_data.py` | Σχεδιασμός του μηχανισμού ενοποιημένης αναζήτησης ραντεβού και της αντίστοιχης οθόνης αναζήτησης με φίλτρα κατάστασης/χρόνου, ανάπτυξη των modules εξαγωγής δεδομένων σε Excel, PDF (ReportLab) και CSV. Τελικό UI/UX Refinement διεπαφών. |
 | **Κονδύλης Γιώργος** | `gui_employees.py`<br>`gui_users.py`<br>`email_service.py` | Ανάπτυξη της CRUD διαχείρισης προσωπικού (υπαλλήλων), σχεδιασμός της οθόνης διαχείρισης λογαριασμών χρηστών (`gui_users.py` σε συνεργασία με τον Δ. Ασπρίδη) και υλοποίηση του back-end μηχανισμού αποστολής emails (SMTP) και παραγωγής αρχείων ημερολογίου (`email_service.py` σε συνεργασία με τον Χ. Καταξενό). |

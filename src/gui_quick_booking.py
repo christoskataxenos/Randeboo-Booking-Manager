@@ -237,16 +237,16 @@ class QuickBookingWindow:
 
     def _toggle_customer_mode(self) -> None:
         self.selected_customer_id = None
-        self.lbl_selected_cust.config(text="Επιλεγμένος: Κανένας", fg="red")  # UI_COLOR
+        self.lbl_selected_cust.config(text="Επιλεγμένος: Κανένας", fg="red")
         for entry_widget in [self.ent_search_name, self.ent_search_email, self.ent_new_fname, 
                              self.ent_new_lname, self.ent_new_phone, self.ent_new_email]:
             entry_widget.delete(0, tk.END)
         if self.var_new_cust.get():
             self.frame_existing.pack_forget()
-            self.frame_new.pack(fill="x")  # UI_LAYOUT
+            self.frame_new.pack(fill="x")
         else:
             self.frame_new.pack_forget()
-            self.frame_existing.pack(fill="x")  # UI_LAYOUT
+            self.frame_existing.pack(fill="x")
 
     def _on_notes_mousewheel(self, event: Any) -> None:
         if self.ent_notes.winfo_exists():
@@ -341,14 +341,14 @@ class QuickBookingWindow:
 
     def _no_customer_found(self) -> None:
         self.selected_customer_id = None
-        self.lbl_selected_cust.config(text="Δεν βρέθηκε πελάτης", fg="red")  # UI_COLOR
+        self.lbl_selected_cust.config(text="Δεν βρέθηκε πελάτης", fg="red")
 
     def _select_customer(self, customer_dict: Dict[str, Any]) -> None:
         self.selected_customer_id = customer_dict["customer_id"]
         self.lbl_selected_cust.config(
             text=f"Επιλεγμένος: {customer_dict['first_name']} {customer_dict['last_name']}",
             fg="green"
-        )  # UI_COLOR
+        )
 
     def _open_selection_popup(self, found_customers: List[Dict[str, Any]]) -> None:
         popup = tk.Toplevel(self.window)
