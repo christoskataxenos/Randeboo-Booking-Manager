@@ -77,6 +77,21 @@ def main() -> None:
     root = tk.Tk()
     root.title("RandeBoo — Σύστημα Διαχείρισης Ραντεβού")
     
+    # Φόρτωση εικονιδίου εφαρμογής με υποστήριξη cross-platform
+    # Δοκιμάζουμε πρώτα το αρχείο .ico για Windows, και ως fallback το .png για άλλα λειτουργικά συστήματα
+    try:
+        icon_path_ico = os.path.join(os.path.dirname(__file__), "randeboo.ico")
+        icon_path_png = os.path.join(os.path.dirname(__file__), "randeboo.png")
+        
+        if os.path.exists(icon_path_ico):
+            root.iconbitmap(icon_path_ico)
+        elif os.path.exists(icon_path_png):
+            # Χρήση iconphoto για cross-platform συμβατότητα (π.χ. Linux/macOS)
+            app_icon = tk.PhotoImage(file=icon_path_png)
+            root.iconphoto(True, app_icon)
+    except Exception as e:
+        logging.warning(f"Αδυναμία φόρτωσης εικονιδίου εφαρμογής: {e}")
+    
     # Διαχείριση κλεισίματος παραθύρου (Graceful Exit + Auto-Backup)
     def on_closing() -> None:
         if messagebox.askokcancel("Έξοδος", "Θέλετε να κλείσετε την εφαρμογή;"):
