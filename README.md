@@ -1,6 +1,6 @@
 # RandeBoo — Σύστημα Διαχείρισης Ραντεβού
 
-[🇬🇧 English Version](README_EN.md) | [📖 Οδηγός Χρήσης (User Guide)](USER_GUIDE.md)
+[Οδηγός Χρήσης (User Guide)](USER_GUIDE.md)
 
 **Project 07 (ΠΛΗΠΡΟ, ΕΑΠ 2025-2026) — Team 1**
 
