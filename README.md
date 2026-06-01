@@ -85,6 +85,7 @@ Finalized_files/
 │   ├── randeboo.ico                            # Εικονίδιο εφαρμογής (ICO format για Windows)
 │   └── randeboo.png                            # Εικονίδιο εφαρμογής (PNG format για cross-platform)
 ├── requirements.txt                            # Εξωτερικές βιβλιοθήκες εφαρμογής
+├── README.md                                   # Το παρόν αρχείο τεκμηρίωσης (Readme)
 ├── USER_GUIDE.md                               # Αναλυτικός οδηγός χρήσης της εφαρμογής
 └── [ΠΛΗΠΡΟ]-Project07 (Διαχείριση Ραντεβού).pdf    # Εκφώνηση της εργασίας
 ```
