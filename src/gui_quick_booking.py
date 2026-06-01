@@ -446,6 +446,15 @@ class QuickBookingWindow:
                 self.alert_info("Το ραντεβού καταχωρήθηκε επιτυχώς!")
                 self.on_success()
                 self.window.destroy()
+
+                # Αποστολή email επιβεβαίωσης στον πελάτη
+                try:
+                    import email_service
+                    appt_data = database.get_appointment_by_id(error_message) # Το error_message περιέχει το ID του ραντεβού
+                    if appt_data:
+                        email_service.send_single_reminder_async(appt_data)
+                except Exception as e:
+                    logging.error(f"Σφάλμα κατά την αποστολή email: {e}")
             else:
                 self.alert_error(error_message)
         except Exception as booking_error:

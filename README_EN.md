@@ -133,81 +133,10 @@ Make sure **Python 3.10** or a newer version is installed on your system.
 
 ---
 
-### Linux Instructions (Ubuntu/Debian)
+### Database and Backup Storage in the EXE Edition
+When the application runs as a standalone `.exe` file (frozen state), file management operates in portable mode:
+*   **Database Location:** The database `randeboo.db` is **not** stored in system temporary folders (Temp) where it would be lost upon termination. The system automatically detects PyInstaller execution and sets the directory of the executable file (`sys.executable`) as the root directory. The database is saved and permanently updated inside the `data/` directory next to `RandeBoo.exe` (i.e., at the path `./data/randeboo.db`).
+*   **Backup Location:** Similarly, automatic and manual backups are saved in the `backups/` folder next to `RandeBoo.exe` (i.e., at the path `./backups/`).
+*   **Log Files (Logs):** The `app.log` file is also created in the same directory as the executable.
 
-On most Linux distributions, Tkinter and Python's virtual environment module are not pre-installed.
-
-1.  **Install Required System Packages:**
-    Open your terminal and run the following command to install the required packages:
-    ```bash
-    sudo apt update
-    sudo apt install python3-pip python3-venv python3-tk
-    ```
-2.  **Navigate to the Project Folder:**
-    Go to the `Finalized_files` directory.
-3.  **Create a Virtual Environment:**
-    ```bash
-    python3 -m venv venv
-    ```
-4.  **Activate the Virtual Environment:**
-    ```bash
-    source venv/bin/activate
-    ```
-5.  **Install Dependencies:**
-    ```bash
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    ```
-6.  **Run the Application:**
-    ```bash
-    python3 src/main.py
-    ```
-
----
-
-### macOS Instructions
-
-1.  **Install Python & Tkinter:**
-    The default macOS Python installation might not include Tkinter support. It is highly recommended to install Python via [Homebrew](https://brew.sh/):
-    ```bash
-    brew install python python-tk
-    ```
-2.  **Navigate to the Project Folder:**
-    Go to the `Finalized_files` directory.
-3.  **Create a Virtual Environment:**
-    ```bash
-    python3 -m venv venv
-    ```
-4.  **Activate the Virtual Environment:**
-    ```bash
-    source venv/bin/activate
-    ```
-5.  **Install Dependencies:**
-    ```bash
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    ```
-6.  **Run the Application:**
-    ```bash
-    python3 src/main.py
-    ```
-
----
-
-## Executable Edition (EXE Edition)
-
-For easier distribution and execution without requiring the end-user to install Python or its dependencies, the application can be built into a standalone executable file (`RandeBoo.exe`).
-
-### 1. Building the EXE File
-The executable is created using the **PyInstaller** library via the official project manager (`tools/randeboo_manager.py`):
-1.  Run `python tools/randeboo_manager.py`.
-2.  Click the **Build!** button under the **🔨 Build EXE** card.
-3.  The final `RandeBoo.exe` file will be generated in the `dist/` directory.
-
-### 2. Database, Backups, and Portable Mode
-When the application runs as a standalone `.exe` file (frozen state), it operates in portable mode:
-*   **Database Location:** The database `randeboo.db` is **not** stored in system temporary folders (Temp) where it would be deleted upon closing. The system automatically detects PyInstaller execution and sets the directory of the executable file (`sys.executable`) as the root directory. The database is saved and permanently updated inside the `data/` directory next to `RandeBoo.exe` (i.e. at the path `./data/randeboo.db`).
-*   **Backup Location:** Similarly, automatic and manual backups are saved in the `backups/` folder next to the `RandeBoo.exe` file (i.e. at the path `./backups/`).
-*   **Log Files:** The `app.log` file is also created in the same directory as the executable.
-
-This makes the application fully portable: you can move the entire folder containing `RandeBoo.exe`, the `data/` directory, and the `backups/` directory to any other computer running Windows, and the application will run immediately with all data intact.
+This makes the application fully portable: you can move the entire folder containing `RandeBoo.exe`, the database subdirectory (`data/`), and the backups subdirectory (`backups/`) to any other computer running Windows, and the application will run immediately with all data intact.

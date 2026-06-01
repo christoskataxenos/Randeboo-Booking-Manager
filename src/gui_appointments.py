@@ -631,6 +631,15 @@ class CalendarView(tk.Frame):
             messagebox.showinfo("Επιτυχία", "Το ραντεβού καταχωρήθηκε!")
             self.display_available_slots() # Εδώ θα φανεί το νέο ραντεβού στο "βελάκι"
             popup_window.destroy() # Κλείνει το παράθυρο επιλογής
+
+            # Αποστολή email επιβεβαίωσης στον πελάτη
+            try:
+                import email_service
+                appt_data = database.get_appointment_by_id(msg) # Το msg περιέχει το ID του ραντεβού
+                if appt_data:
+                    email_service.send_single_reminder_async(appt_data)
+            except Exception as e:
+                print(f"Σφάλμα κατά την αποστολή email: {e}")
         else:
             messagebox.showerror("Σφάλμα", f"Αποτυχία: {msg}")
 

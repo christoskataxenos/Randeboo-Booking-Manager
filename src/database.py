@@ -206,6 +206,11 @@ def init_db() -> None:
         if "specialty" not in emp_cols:
             conn.execute("ALTER TABLE EMPLOYEES ADD COLUMN specialty TEXT")
 
+        # Προσθήκη reminder_sent στο APPOINTMENTS
+        appt_cols = [r["name"] for r in conn.execute("PRAGMA table_info(APPOINTMENTS)").fetchall()]
+        if "reminder_sent" not in appt_cols:
+            conn.execute("ALTER TABLE APPOINTMENTS ADD COLUMN reminder_sent INTEGER DEFAULT 0")
+
         conn.commit()
     finally:
         conn.close()
@@ -1035,5 +1040,27 @@ def get_appointment_count_by_employee() -> list:
             ORDER BY count DESC
         """).fetchall()
         return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_appointment_by_id(appointment_id: int) -> dict | None:
+    # ΣΚΟΠΟΣ: Επιστρέφει ένα συγκεκριμένο ραντεβού με βάση το ID του,
+    # συμπεριλαμβάνοντας τα στοιχεία του πελάτη (και το email) και του υπαλλήλου.
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            """
+            SELECT a.*, c.first_name || " " || c.last_name AS customer_name,
+                   c.email AS customer_email,
+                   e.first_name || " " || e.last_name AS employee_name
+            FROM APPOINTMENTS a
+            LEFT JOIN CUSTOMERS c ON a.customer_id = c.customer_id
+            LEFT JOIN EMPLOYEES e ON a.employee_id = e.employee_id
+            WHERE a.appointment_id = ?
+            """,
+            (appointment_id,),
+        ).fetchone()
+        return dict(row) if row else None
     finally:
         conn.close()

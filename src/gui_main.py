@@ -897,7 +897,8 @@ class MainWindow:
 
     def _update_clock(self):
         """Ανανεώνει την ώρα κάθε 1 δευτερόλεπτο."""
-        if not hasattr(self, "clock_label") or not self.clock_label:
+        # Έλεγχος αν το widget του ρολογιού υπάρχει ακόμα και δεν έχει καταστραφεί (π.χ. λόγω αλλαγής οθόνης)
+        if not hasattr(self, "clock_label") or not self.clock_label or not self.clock_label.winfo_exists():
             return
 
         try:

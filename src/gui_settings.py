@@ -99,13 +99,17 @@ class SettingsPanel:
         return False
 
     def _initialize_views(self) -> None:
-        if self.role_id == 1: self.views["business"] = BusinessSettingsView(self.content_area, self)
+        if self.role_id == 1: 
+            self.views["business"] = BusinessSettingsView(self.content_area, self)
+            self.views["backup"] = BackupSettingsView(self.content_area, self)
         self.views["profile"] = ProfileSettingsView(self.content_area, self)
         self.views["security"] = SecuritySettingsView(self.content_area, self)
         self.views["system"] = SystemInfoView(self.content_area, self)
 
     def _build_tabs(self) -> None:
-        if self.role_id == 1: self._create_tab_btn("Επιχείρηση", "business")
+        if self.role_id == 1: 
+            self._create_tab_btn("Επιχείρηση", "business")
+            self._create_tab_btn("Αντίγραφα Ασφαλείας", "backup")
         self._create_tab_btn("Το Προφίλ μου", "profile")
         self._create_tab_btn("Ασφάλεια", "security")
         self._create_tab_btn("Πληροφορίες Συστήματος", "system")
@@ -478,6 +482,97 @@ class SystemInfoView(BaseView):
             info_row.pack(fill="x", pady=6)
             tk.Label(info_row, text=f"{label_text}:", bg="white", font=("Arial", 9, "bold"), width=15, anchor="w").pack(side="left")
             tk.Label(info_row, text=value_text, bg="white", font=("Arial", 9)).pack(side="left")
+
+
+class BackupSettingsView(BaseView):
+    # Προβολή για τη διαχείριση των αντιγράφων ασφαλείας (Backup & Restore)
+    
+    def __init__(self, parent: tk.Widget, controller: SettingsPanel) -> None:
+        super().__init__(parent, controller)
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        # Κύριος τίτλος της οθόνης
+        tk.Label(self.frame, text="Αντίγραφα Ασφαλείας", font=("Arial", 18, "bold"), bg=self.controller.COLOR_BG, fg=self.COLOR_SIDEBAR).pack(anchor="w", pady=(0, 20))
+        
+        # Πλαίσιο περιεχομένου
+        backup_container = tk.Frame(self.frame, bg=self.COLOR_WHITE, padx=30, pady=30, highlightthickness=1, highlightbackground=self.COLOR_BORDER)
+        backup_container.pack(fill="both", expand=True)
+        
+        # Επεξηγηματικό κείμενο για τον χρήστη
+        desc_text = "Διαχείριση αντιγράφων ασφαλείας της βάσης δεδομένων. Μπορείτε να δημιουργήσετε ένα νέο αντίγραφο ασφαλείας ή να κάνετε επαναφορά της βάσης σε προηγούμενη κατάσταση επιλέγοντας ένα αρχείο από την παρακάτω λίστα."
+        desc_label = tk.Label(backup_container, text=desc_text, bg=self.COLOR_WHITE, fg=self.COLOR_TEXT, font=("Arial", 10), wraplength=550, justify="left")
+        desc_label.pack(anchor="w", pady=(0, 20))
+        
+        # Πλαίσιο για τα κουμπιά ενεργειών
+        buttons_frame = tk.Frame(backup_container, bg=self.COLOR_WHITE)
+        buttons_frame.pack(fill="x", pady=(0, 20))
+        
+        # Κουμπί δημιουργίας νέου backup
+        self.btn_create = tk.Button(buttons_frame, text="ΔΗΜΙΟΥΡΓΙΑ BACKUP", command=self._create_backup)
+        self._style_button(self.btn_create, self.COLOR_GREEN, "#167C52")
+        self.btn_create.pack(side="left", padx=(0, 10))
+        
+        # Κουμπί επαναφοράς επιλεγμένου backup
+        self.btn_restore = tk.Button(buttons_frame, text="ΕΠΑΝΑΦΟΡΑ BACKUP", command=self._restore_backup)
+        self._style_button(self.btn_restore, self.COLOR_RED, "#EE5253")
+        self.btn_restore.pack(side="left")
+        
+        # Ετικέτα λίστας αντιγράφων
+        list_label = tk.Label(backup_container, text="ΔΙΑΘΕΣΙΜΑ ΑΝΤΙΓΡΑΦΑ ΑΣΦΑΛΕΙΑΣ (BACKUPS):", bg=self.COLOR_WHITE, fg=self.COLOR_MUTED, font=("Arial", 8, "bold"))
+        list_label.pack(anchor="w", pady=(10, 5))
+        
+        # Πλαίσιο λίστας με scrollbar
+        list_frame = tk.Frame(backup_container, bg=self.COLOR_WHITE)
+        list_frame.pack(fill="both", expand=True)
+        
+        self.listbox_backups = tk.Listbox(list_frame, height=10, font=("Arial", 10), highlightthickness=1, highlightbackground=self.COLOR_BORDER, selectbackground=self.COLOR_ACCENT)
+        scrollbar = tk.Scrollbar(list_frame, orient="vertical", command=self.listbox_backups.yview)
+        self.listbox_backups.configure(yscrollcommand=scrollbar.set)
+        
+        self.listbox_backups.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Αρχικό γέμισμα της λίστας
+        self._refresh_list()
+        
+    def _refresh_list(self) -> None:
+        # Καθαρισμός και επαναφόρτωση της λίστας των backups
+        self.listbox_backups.delete(0, "end")
+        backups_list = backup.get_available_backups()
+        for filename in backups_list:
+            self.listbox_backups.insert("end", filename)
+            
+    def _create_backup(self) -> None:
+        # Κλήση της συνάρτησης δημιουργίας backup και ανανέωση της λίστας
+        if backup.create_backup(silent=False):
+            self._refresh_list()
+            
+    def _restore_backup(self) -> None:
+        # Επαναφορά της βάσης από το επιλεγμένο αρχείο της λίστας
+        selection = self.listbox_backups.curselection()
+        if not selection:
+            messagebox.showwarning("Προσοχή", "Παρακαλώ επιλέξτε ένα αρχείο backup από τη λίστα για επαναφορά.")
+            return
+            
+        selected_file = self.listbox_backups.get(selection[0])
+        backup_file_path = os.path.join(backup.BACKUP_DIR, selected_file)
+        
+        # Ερώτηση επιβεβαίωσης στον χρήστη
+        confirm = messagebox.askyesno(
+            "Επιβεβαίωση Επαναφοράς", 
+            f"Είστε σίγουροι ότι θέλετε να επαναφέρετε τη βάση δεδομένων από το αρχείο:\n{selected_file}?\n\n"
+            "ΠΡΟΣΟΧΗ: Όλα τα τρέχοντα δεδομένα θα αντικατασταθούν. Η εφαρμογή θα κλείσει αυτόματα μετά την επαναφορά."
+        )
+        
+        if confirm:
+            if backup.restore_backup(backup_file_path, silent=False):
+                # Κλείσιμο της εφαρμογής για να εξαναγκαστεί η επαναφόρτωση της βάσης
+                self.controller.parent.winfo_toplevel().destroy()
+                
+    def on_show(self) -> None:
+        # Ανανέωση της λίστας όταν εμφανίζεται η καρτέλα
+        self._refresh_list()
 
 
 class SettingsDialogBase(tk.Toplevel):
