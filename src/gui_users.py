@@ -334,6 +334,13 @@ class AddUserWindow(gui_customers.AddCustomerWindow):
         # Εγώ επιλέγω το στοιχείο [1] που είναι το main_frame (στοιχείο [0] είναι το label)
         main_frame = self.window.winfo_children()[1]
 
+        # Καταστρέφουμε το πεδίο σημειώσεων (Notes) που κληρονομήθηκε από το AddCustomerWindow
+        for child in main_frame.winfo_children():
+            if isinstance(child, tk.Label) and child.cget("text") == "Σημειώσεις":
+                child.destroy()
+        if hasattr(self, "ent_notes") and self.ent_notes:
+            self.ent_notes.destroy()
+
         # Βγάζω το κουμπί από το pack για να μπουν τα νέα πεδία από πάνω του. Αργότερα θα το ξαναβάλω
         self.btn_add.pack_forget()
 
