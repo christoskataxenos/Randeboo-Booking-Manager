@@ -1,6 +1,6 @@
 """
 Η σχεδίαση του αρχείου έγινε από την Καναβού Καλλιόπη.
-Η εκτέλεση (υλοποίηση) έγινε από τον Καταξένο Χρήστο.
+Η υλοποίηση έγινε από τον Καταξενό Χρήστο.
 Συνεισφορά από τον Ασπρίδη Δημήτρη:
     - Υλοποίηση της ασφάλειας (κρυπτογράφηση κωδικών με bcrypt).
     - Υλοποίηση CRUD λειτουργιών για τους Χρήστες (USERS).
@@ -90,6 +90,7 @@ def init_db() -> None:
                 last_name TEXT NOT NULL,
                 phone TEXT,
                 email TEXT UNIQUE,
+                notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """
@@ -210,6 +211,11 @@ def init_db() -> None:
         appt_cols = [r["name"] for r in conn.execute("PRAGMA table_info(APPOINTMENTS)").fetchall()]
         if "reminder_sent" not in appt_cols:
             conn.execute("ALTER TABLE APPOINTMENTS ADD COLUMN reminder_sent INTEGER DEFAULT 0")
+
+        # Προσθήκη notes στο CUSTOMERS
+        cust_cols = [r["name"] for r in conn.execute("PRAGMA table_info(CUSTOMERS)").fetchall()]
+        if "notes" not in cust_cols:
+            conn.execute("ALTER TABLE CUSTOMERS ADD COLUMN notes TEXT")
 
         conn.commit()
     finally:
@@ -468,12 +474,12 @@ def get_user_logins(user_id: int | None = None, limit: int | None = None) -> lis
 # =============================================================================
 
 
-def create_customer(first_name: str, last_name: str, phone: str | None, email: str) -> int:
+def create_customer(first_name: str, last_name: str, phone: str | None, email: str, notes: str | None = None) -> int:
     conn = get_connection()
     try:
         cursor = conn.execute(
-            "INSERT INTO CUSTOMERS (first_name, last_name, phone, email) VALUES (?, ?, ?, ?)",
-            (first_name, last_name, phone, email),
+            "INSERT INTO CUSTOMERS (first_name, last_name, phone, email, notes) VALUES (?, ?, ?, ?, ?)",
+            (first_name, last_name, phone, email, notes),
         )
         conn.commit()
         return cursor.lastrowid
@@ -514,12 +520,12 @@ def get_customer_by_email(email: str) -> dict | None:
         conn.close()
 
 
-def update_customer(customer_id: int, first_name: str, last_name: str, phone: str | None, email: str) -> bool:
+def update_customer(customer_id: int, first_name: str, last_name: str, phone: str | None, email: str, notes: str | None = None) -> bool:
     conn = get_connection()
     try:
         conn.execute(
-            "UPDATE CUSTOMERS SET first_name=?, last_name=?, phone=?, email=? WHERE customer_id=?",
-            (first_name, last_name, phone, email, customer_id),
+            "UPDATE CUSTOMERS SET first_name=?, last_name=?, phone=?, email=?, notes=? WHERE customer_id=?",
+            (first_name, last_name, phone, email, notes, customer_id),
         )
         conn.commit()
         return True

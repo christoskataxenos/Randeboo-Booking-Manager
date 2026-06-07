@@ -189,12 +189,16 @@ class UsersWindow:
                 user_status='Ενεργός'
             else:
                 user_status = 'Ανενεργός'
+            if user['role_id'] == 1:
+                user_role = 'Admin'
+            else:
+                user_role = 'User'
             user_values = (
                 user['user_id'],
                 user['first_name'],
                 user['last_name'],
                 user['username'],
-                user['role_id'],
+                user_role,
                 user['email'],
                 user['phone'],
                 user_status
@@ -229,12 +233,16 @@ class UsersWindow:
                         user_status = 'Ενεργός'
                     else:
                         user_status = 'Ανενεργός'
+                    if item['role_id'] == 1:
+                        user_role = 'Admin'
+                    else:
+                        user_role = 'User'
                     user_values = (
                         item['user_id'],
                         item['first_name'],
                         item['last_name'],
                         item['username'],
-                        item['role_id'],
+                        user_role,
                         item['email'],
                         item['phone'],
                         user_status
@@ -342,9 +350,15 @@ class AddUserWindow(gui_customers.AddCustomerWindow):
         self.ent_password.pack(fill="x", pady=(0, 10))
 
         tk.Label(main_frame, text="Ρόλος", bg="white").pack(anchor="w")
-        self.ent_role = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1,
-                                 highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
-        self.ent_role.pack(fill="x", pady=(0, 10))
+        # Διαθέσιμες επιλογές για το dropdown menu επιλογής ρόλου
+        options = ["Admin", "User"]
+        # Δηλώνω το dropdown menu και το βαζω readonly για να μη μπορεί να γραψει μεσα ο χρήστης
+        self.drop_menu = ttk.Combobox(main_frame, values=options, state="readonly")
+        # Default κείμενο που θα φαίνεται μέχρι να επιλεγεί κάτι
+        self.drop_menu.set("Επιλογή Ρόλου...")
+        self.drop_menu.pack(fill="x", pady=(0, 10))
+        # Bind της επιλογής με συνάρτηση on_select για να περνάω την κατάλληλη τιμή στη μεταβλητή
+        self.drop_menu.bind("<<ComboboxSelected>>", self.on_select)
 
         # Προσθήκη του Checkbox για το Activation ή όχι του χρήστη (default τιμή να είναι ενεργός)
         self.user_activation = tk.BooleanVar(value=True)
@@ -358,11 +372,19 @@ class AddUserWindow(gui_customers.AddCustomerWindow):
         # Bindings για το update. Παρόλο που ορίζονται στη μαμά κλάση τα κάνω rebind για να εκτελείται η σωστή συνάρτηση
         self.ent_username.bind('<Return>', lambda event: self._add_user())
         self.ent_password.bind('<Return>', lambda event: self._add_user())
-        self.ent_role.bind('<Return>', lambda event: self._add_user())
         self.ent_name.bind('<Return>', lambda event: self._add_user())
         self.ent_lastname.bind('<Return>', lambda event: self._add_user())
         self.ent_phone.bind('<Return>', lambda event: self._add_user())
         self.ent_email.bind('<Return>', lambda event: self._add_user())
+
+    def on_select(self, event):
+        # Παίρνουμε την τιμή που επέλεξε ο χρήστης
+        selected = self.drop_menu.get()
+        if selected == "Admin":
+            self.role_id=1
+        elif selected=="User":
+            self.role_id=2
+
 
     # Συνάρτηση για την προσθήκη του νέου χρήστη
     def _add_user(self):
@@ -371,7 +393,7 @@ class AddUserWindow(gui_customers.AddCustomerWindow):
         lastname = self.ent_lastname.get().strip()
         username = self.ent_username.get().strip()
         password=self.ent_password.get().strip()
-        role= self.ent_role.get().strip()
+        role= self.role_id
         email2 = self.ent_email.get().strip()
         phone = self.ent_phone.get().strip()
         # Παίρνω το status του checkbox και το μετατρέπω σε τιμή για να το βάλω στη βάση
@@ -389,9 +411,9 @@ class AddUserWindow(gui_customers.AddCustomerWindow):
             messagebox.showwarning("Σφάλμα", "Το e-mail δεν φαίνεται έγκυρο!", parent=self.window)
             return
         if not role:
-            # Αν δε δηλωθεί ρόλος κατά την εισαγωγή δίνεται default ρολος ως χρήστης
+            # Αν δε δηλωθεί ρόλος κατά την εισαγωγή δίνεται default ρόλος ως χρήστης
             self.ent_role=2
-        elif role != '1' and role !='2':
+        elif role != 1 and role !=2:
             messagebox.showwarning("Σφάλμα", "O ρόλος μπορεί να είναι 1 για admin και 2 για χρήστη.", parent=self.window)
             return
         if len(phone)<10 or len(phone) >10:
@@ -430,9 +452,22 @@ class UpdateUserWindow(AddUserWindow):
         self.ent_name.insert(0, user_data[1])
         self.ent_lastname.insert(0, user_data[2])
         self.ent_username.insert(0, user_data[3])
-        self.ent_role.insert(0, user_data[4])
+
+        # Νωρίτερα στη _load_user έχω θέσει περιγραφικά τον ρόλο (δεν είναι πια με id)
+        self.role_desciption=user_data[4]
+
+        # Ελέγχω τι ρόλο έχει ο χρήστης και εμφανίζω την κατάλληλη επιλογή στο dropdown menu
+        # και δηλώνω το κατάλληλο role_id για να γίνει η τελική καταχώρηση στη βάση στο τέλος
+        if  self.role_desciption=="Admin":
+            self.drop_menu.set("Admin")
+            self.role_id=1
+        elif self.role_desciption=="User":
+            self.drop_menu.set("User")
+            self.role_id = 2
+
         self.ent_email.insert(0, user_data[5])
         self.ent_phone.insert(0, user_data[6])
+
         status = user_data[7]
         # Έλεγχω αν είναι ενεργός ο χρήστης ώστε να γίνει σωστή απεικόνιση στο checkbox
         if status == "Ενεργός":
@@ -449,7 +484,6 @@ class UpdateUserWindow(AddUserWindow):
         self.ent_lastname.bind('<Return>', lambda event: self._do_update_user())
         self.ent_username.bind('<Return>', lambda event: self._do_update_user())
         self.ent_email.bind('<Return>', lambda event: self._do_update_user())
-        self.ent_role.bind('<Return>', lambda event: self._do_update_user())
         self.ent_phone.bind('<Return>', lambda event: self._do_update_user())
 
     # Συνάρτηση που εκτελεί το update των στοιχείων του χρήστη
@@ -460,7 +494,7 @@ class UpdateUserWindow(AddUserWindow):
         lastname = self.ent_lastname.get()
         username = self.ent_username.get()
         password = self.ent_password.get()
-        role_id = self.ent_role.get()
+        role_id = self.role_id
         email = self.ent_email.get()
         phone= self.ent_phone.get()
         if self.user_activation.get():
@@ -491,7 +525,7 @@ class UpdateUserWindow(AddUserWindow):
         if not role_id:
             # Αν δε δηλωθεί ρόλος κατά την εισαγωγή δίνεται default ρολος ως χρήστης
             self.ent_role=2
-        elif role_id != '1' and role_id !='2':
+        elif role_id != 1 and role_id !=2:
             messagebox.showwarning("Σφάλμα", "O ρόλος μπορεί να είναι 1 για admin και 2 για χρήστη.", parent=self.window)
             return
         if len(phone)<10 or len(phone) >10:

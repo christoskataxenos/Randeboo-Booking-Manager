@@ -1,5 +1,5 @@
 """
-Ο κώδικας του αρχείου συντάχθηκε από τον Καταξένο Χρήστο
+Ο κώδικας του αρχείου συντάχθηκε από τον Καταξενό Χρήστο
 
 =============================================================================
 ΑΡΧΕΙΟ: backup.py
@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 import sys
 
-# Project root resolution (υποστήριξη PyInstaller frozen state)
+# Project root resolution 
 if getattr(sys, "frozen", False):
     _project_root = os.path.dirname(sys.executable)
 else:

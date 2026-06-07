@@ -1,7 +1,11 @@
-# =============================================================================
-# ΑΡΧΕΙΟ: email_service.py
-# ΠΕΡΙΓΡΑΦΗ: Ασύγχρονη και μεμονωμένη αποστολή υπενθυμίσεων email μέσω SMTP.
-# =============================================================================
+"""
+Ο κώδικας του αρχείου συντάχθηκε από τον Καταξενό Χρήστο
+
+=============================================================================
+ΑΡΧΕΙΟ: email_service.py
+ΣΚΟΠΟΣ: Ασύγχρονη και μεμονωμένη αποστολή υπενθυμίσεων email μέσω SMTP.
+=============================================================================
+"""
 
 import smtplib
 import ssl
@@ -90,84 +94,6 @@ def _attach_ics_file(msg: MIMEMultipart, date_str: str, appt: dict, company_name
         encoders.encode_base64(attachment_part)
         attachment_part.add_header("Content-Disposition", 'attachment; filename="appointment.ics"')
         msg.attach(attachment_part)
-
-
-def send_daily_reminders_async(date_str: str) -> None:
-    """
-    Ασύγχρονη κλήση για μαζική αποστολή υπενθυμίσεων της ημέρας.
-    """
-    thread = threading.Thread(target=_send_daily_reminders_worker, args=(date_str,))
-    thread.daemon = True
-    thread.start()
-
-
-def _send_daily_reminders_worker(date_str: str):
-    """
-    Ο worker για μαζική αποστολή emails.
-    """
-    db_conn = None
-    try:
-        settings = database.get_business_settings()
-        company_name = settings.get("company_name", "RandeBoo")
-        
-        # Επαγγελματικό προεπιλεγμένο πρότυπο στα Ελληνικά
-        default_template = (
-            "Αγαπητέ/ή {customer_name},\n\n"
-            "Σας υπενθυμίζουμε το προγραμματισμένο ραντεβού σας με την επιχείρηση {company_name} "
-            "στις {appt_date} και ώρα {start_time}.\n\n"
-            "Σε περίπτωση που επιθυμείτε να ακυρώσετε ή να αλλάξετε το ραντεβού σας, "
-            "παρακαλούμε επικοινωνήστε μαζί μας στο τηλέφωνο {phone}.\n\n"
-            "Ευχαριστούμε,\n"
-            "{company_name}"
-        )
-        template = settings.get("email_body_template", default_template)
-        if not template or not template.strip():
-            template = default_template
-            
-        should_attach = settings.get("add_to_calendar") == "1"
-
-        appointments = database.get_day_appointments(date_str)
-        if not appointments:
-            logging.info(f"Δεν βρέθηκαν ραντεβού για την ημερομηνία {date_str}.")
-            return
-
-        context = ssl.create_default_context()
-        server, sender_email = _get_smtp_server(settings, context)
-
-        if not server:
-            return
-
-        with server:
-            db_conn = database.get_connection()
-            count = 0
-            for appt in appointments:
-                cust_email = appt.get("customer_email")
-                if not cust_email:
-                    continue
-
-                body = _format_email_body(template, appt, settings, date_str)
-                msg = MIMEMultipart()
-                msg["From"] = f"{company_name} <{sender_email}>"
-                msg["To"] = cust_email
-                msg["Subject"] = f"Υπενθύμιση Ραντεβού - {company_name}"
-                msg.attach(MIMEText(body, "plain", "utf-8"))
-
-                if should_attach:
-                    _attach_ics_file(msg, date_str, appt, company_name)
-
-                server.send_message(msg)
-                db_conn.execute("UPDATE APPOINTMENTS SET reminder_sent = 1 WHERE appointment_id = ?", (appt["appointment_id"],))
-                count += 1
-            
-            db_conn.commit()
-            logging.info(f"Ολοκληρώθηκε η αποστολή {count} υπενθυμίσεων.")
-
-    except Exception as e:
-        logging.error(f"Αποτυχία κατά τη μαζική αποστολή: {e}")
-    finally:
-        if db_conn:
-            db_conn.close()
-
 
 def send_single_reminder_async(appt: dict) -> None:
     """

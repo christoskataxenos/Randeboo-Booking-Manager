@@ -1,3 +1,12 @@
+"""
+Ο κώδικας του αρχείου συντάχθηκε από τον Καταξενό Χρήστο
+
+=============================================================================
+ΑΡΧΕΙΟ: gui_employees.py
+ΣΚΟΠΟΣ: Διαχείριση προσωπικού (CRUD UI)
+=============================================================================
+"""
+
 import tkinter as tk
 from tkinter import ttk
 import database
@@ -19,7 +28,7 @@ class EmployeesWindow:
         self.color_red_hover = "#C23B3C"  # Red hover color
         self.color_red = "#EE5253"  # Delete button red
         self.color_border = "#E5E9F0"  # Border / separator color
-        self.parent.configure(bg=self.color_bg)
+        self.parent.configure(background=self.color_bg)
 
         # MAIN CONTENT AREA: Η κεντρική περιοχή προβολής
         self.content_frame = tk.Frame(self.parent, bg=self.color_bg, padx=30, pady=2)
@@ -84,6 +93,9 @@ class EmployeesWindow:
         self.last_hovered_item = None
         self.table.bind("<Motion>", self.on_mouse_move)
         self.table.tag_configure("hover", background="#B3E5FC")
+
+        # Σύνδεση της ροδέλας του ποντικιού για κύλιση στον πίνακα
+        self.table.bind("<MouseWheel>", lambda event: self.table.yview_scroll(int(-1 * (event.delta / 120)), "units"))
 
         # Container Κουμπιών
         self.button_container = tk.Frame(self.content_frame, bg=self.color_bg, padx=30, pady=2)

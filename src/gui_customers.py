@@ -1,10 +1,10 @@
 """
 =============================================================================
 =                                                                           =
-=       Ο κώδικας του αρχείου συντάχθηκε από τον Ασπρίδη Δημήτρη.           =
+=       Ο κώδικας του αρχείου συντάχθηκε από τον  Ασπρίδη Δημήτρη.          =
 =                                                                           =
 =   ΣΗΜΕΙΩΣΗ: Οι αλλαγές στις γραμμές 356 και 410 έγιναν από τον            =
-=   Καταξένο Χρήστο για την υποστήριξη του Email-First συστήματος.          =
+=   Καταξενό Χρήστο για την υποστήριξη του Email-First συστήματος.          =
 =                                                                           =
 =============================================================================
 ΑΡΧΕΙΟ: gui_customers.py
@@ -136,7 +136,7 @@ class CustomersWindow:
         container.rowconfigure(0, weight=1)
 
         # Δήλωση στηλών
-        columns=("customer_id","first_name","last_name","phone","email")
+        columns=("customer_id","first_name","last_name","phone","email","notes")
 
         # Δημιουργία Treeview
         tree=ttk.Treeview(container,columns=columns,show="headings",height=15)
@@ -145,11 +145,13 @@ class CustomersWindow:
         tree.heading("last_name", text="Επώνυμο")
         tree.heading("phone", text="Τηλέφωνο")
         tree.heading("email", text="e-mail")
+        tree.heading("notes", text="Σημειώσεις")
         tree.column("customer_id",width=60,anchor="center")
-        tree.column("first_name",width=140,anchor="center")
-        tree.column("last_name", width=140,anchor="center")
+        tree.column("first_name",width=120,anchor="center")
+        tree.column("last_name", width=120,anchor="center")
         tree.column("phone", width=100,anchor="center")
-        tree.column("email", width=100,anchor="center")
+        tree.column("email", width=120,anchor="center")
+        tree.column("notes", width=150,anchor="w")
         tree.pack(side="left", fill="both" ,expand=True)
 
         # Δηλώνω τη scrollbar του πίνακα, σε περίπτωση που έχει περισσότερα από 15 αποτελέσματα
@@ -190,7 +192,8 @@ class CustomersWindow:
                 customer['first_name'],
                 customer['last_name'],
                 customer['phone'],
-                customer['email']
+                customer['email'],
+                customer.get('notes') or ""
             )
             tag='evenrow' if i%2==0 else 'oddrow'
             self.table.insert("", "end", values=customer_values, tags=(tag,))
@@ -222,7 +225,8 @@ class CustomersWindow:
                         item['first_name'],
                         item['last_name'],
                         item['phone'],
-                        item['email']
+                        item['email'],
+                        item.get('notes') or ""
                     )
                     # Βάζω tag για να χρωματίσω κατάλληλα τις γραμμές
                     tag = 'evenrow' if i % 2 == 0 else 'oddrow'
@@ -340,6 +344,9 @@ class AddCustomerWindow:
         tk.Label(main_frame, text="e-mail", bg="white").pack(anchor="w")
         self.ent_email= tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
         self.ent_email.pack(fill="x", pady=(0, 10))
+        tk.Label(main_frame, text="Σημειώσεις", bg="white").pack(anchor="w")
+        self.ent_notes = tk.Entry(main_frame, font=("Arial", 11), relief="flat", highlightthickness=1, highlightbackground="#B0BEC5", highlightcolor="#1E90FF")
+        self.ent_notes.pack(fill="x", pady=(0, 10))
 
         # Το κουμπί της καταχώρησης
         self.btn_add = tk.Button(main_frame, text="Καταχώρηση Νέου Πελάτη", command=self._add_customer, bg=self.color_accent, fg="white", font=("Arial", 10, "bold"),relief="flat", cursor="hand2", pady=5)
@@ -350,6 +357,7 @@ class AddCustomerWindow:
         self.ent_lastname.bind('<Return>', lambda event: self._add_customer())
         self.ent_phone.bind('<Return>', lambda event: self._add_customer())
         self.ent_email.bind('<Return>', lambda event: self._add_customer())
+        self.ent_notes.bind('<Return>', lambda event: self._add_customer())
         self.window.bind('<Escape>', lambda event: self.window.destroy())
 
     # Συνάρτηση για την προσθήκη του νέου πελάτη
@@ -359,6 +367,7 @@ class AddCustomerWindow:
         last_name = self.ent_lastname.get().strip()
         phone = self.ent_phone.get().strip()
         email = self.ent_email.get().strip()
+        notes = self.ent_notes.get().strip()
 
         # Αν δεν είναι τα υποχρεωτικά πεδία συμπληρωμένα βγαίνει popup message (Το τηλέφωνο είναι πλέον προαιρετικό)
         if not first_name or not last_name or not email:
@@ -375,7 +384,7 @@ class AddCustomerWindow:
 
         # Error handling για την επικοινωνία με τη βάση
         try:
-            database.create_customer(first_name, last_name, phone, email)
+            database.create_customer(first_name, last_name, phone, email, notes)
             messagebox.showinfo("Επιτυχία", "Ο πελάτης προστέθηκε επιτυχώς!", parent=self.window)
             self.window.destroy()
             return
@@ -399,6 +408,7 @@ class UpdateCustomerWindow(AddCustomerWindow):
         self.ent_lastname.insert(0, customer_data[2])
         self.ent_phone.insert(0, customer_data[3])
         self.ent_email.insert(0, customer_data[4])
+        self.ent_notes.insert(0, customer_data[5] if len(customer_data) > 5 else "")
 
         # Button για την ενημέρωση στοιχείων
         self.btn_add.configure(text="Ενημέρωση στοιχείων", command=self._do_update_customer)
@@ -408,6 +418,7 @@ class UpdateCustomerWindow(AddCustomerWindow):
         self.ent_lastname.bind('<Return>', lambda event: self._do_update_customer())
         self.ent_phone.bind('<Return>', lambda event: self._do_update_customer())
         self.ent_email.bind('<Return>', lambda event: self._do_update_customer())
+        self.ent_notes.bind('<Return>', lambda event: self._do_update_customer())
         self.window.bind('<Escape>', lambda event: self.window.destroy())
 
     # Συνάρτηση που εκτελεί το update των στοιχείων του πελάτη
@@ -417,6 +428,7 @@ class UpdateCustomerWindow(AddCustomerWindow):
         last_name = self.ent_lastname.get()
         phone = self.ent_phone.get()
         email = self.ent_email.get()
+        notes = self.ent_notes.get()
 
         # Αν δεν είναι τα υποχρεωτικά πεδία συμπληρωμένα βγαίνει popup message
         if not first_name or not last_name or not email:
@@ -435,7 +447,7 @@ class UpdateCustomerWindow(AddCustomerWindow):
         # Error handling για την επικοινωνία με τη βάση
         try:
             # Καλώ τη συνάρτηση update από τη βάση
-            database.update_customer(self.customer_id, first_name, last_name, phone, email)
+            database.update_customer(self.customer_id, first_name, last_name, phone, email, notes)
             messagebox.showinfo("Επιτυχία", "Η ενημέρωση ολοκληρώθηκε!", parent=self.window)
             self.window.destroy()  # Κλείνουμε το παράθυρο
         except Exception as error:

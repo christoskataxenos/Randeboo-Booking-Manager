@@ -24,8 +24,19 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Backups (Usually not committed to repo)
+# Backups
 backups/
 
-#scrpt
-script.txt
+# PyInstaller & build outputs
+build/
+dist/
+*.spec
+
+# Database files
+data/*.db
+
+# Office Documents (of course we do not commit Word docs)
+*.docx
+*.doc
+~$*.docx
+~$*.doc

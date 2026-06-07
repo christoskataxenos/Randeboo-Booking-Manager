@@ -1,5 +1,5 @@
 """
-Ο κώδικας του αρχείου συντάχθηκε από τον Καταξένο Χρήστο.
+Ο κώδικας του αρχείου συντάχθηκε από τον Καταξενό Χρήστο.
 Συνεισφορά από τον Ασπρίδη Δημήτρη: προσθήκη συντόμευσης πλήκτρου 'Escape' για απευθείας αποσύνδεση του χρήστη.
 
 =============================================================================
@@ -386,6 +386,9 @@ class MainWindow:
         self.last_hovered_item = None
         self.agenda_table.bind("<Motion>", self._on_agenda_table_hover)
         self.agenda_table.bind("<Double-1>", lambda event: self._btn_edit_click())
+
+        # Σύνδεση της ροδέλας του ποντικιού για κύλιση στον πίνακα
+        self.agenda_table.bind("<MouseWheel>", lambda event: self.agenda_table.yview_scroll(int(-1 * (event.delta / 120)), "units"))
 
         # Mapping των σειρών με τα λεξικά ραντεβού
         self._agenda_appt_map = {}

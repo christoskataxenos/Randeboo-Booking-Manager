@@ -1,8 +1,11 @@
-# =============================================================================
-# ΑΡΧΕΙΟ: gui_settings.py
-# ΠΕΡΙΓΡΑΦΗ: Πάνελ Ρυθμίσεων (Επιχείρηση, Προφίλ, Ασφάλεια)
-# ΣΥΝΤΑΚΤΗΣ: Χρήστος Καταξενός
-# =============================================================================
+"""
+Ο κώδικας του αρχείου συντάχθηκε από τον Καταξενό Χρήστο
+
+=============================================================================
+ΑΡΧΕΙΟ: gui_settings.py
+ΣΚΟΠΟΣ: Πάνελ Ρυθμίσεων (Επιχείρηση, Προφίλ, Ασφάλεια)
+=============================================================================
+"""
 
 import json
 import os
@@ -75,11 +78,20 @@ class SettingsPanel:
         self.inner_scroll_canvases.add(canvas)
 
     def _bind_mousewheel(self, toplevel: tk.Tk) -> None:
+        # Σύνδεση του mousewheel για την κύλιση του canvas
         def _on_mousewheel(event: Any) -> None:
             if not self._is_descendant(event.widget, self.main_frame): 
                 return
             inner = self._get_inner_scroll_canvas(event.widget)
             if inner and inner.winfo_ismapped():
+                # Λήψη των ορίων του περιεχομένου για να ελέγξουμε αν απαιτείται κύλιση
+                scroll_box = inner.bbox("all")
+                if scroll_box:
+                    content_height = scroll_box[3] - scroll_box[1]
+                    canvas_height = inner.winfo_height()
+                    # Αν το περιεχόμενο χωράει πλήρως στην οθόνη, δεν κάνουμε κύλιση
+                    if content_height <= canvas_height:
+                        return
                 inner.yview_scroll(int(-1 * (event.delta / 120)), "units")
         toplevel.bind("<MouseWheel>", _on_mousewheel, add="+")
 
@@ -536,12 +548,32 @@ class BackupSettingsView(BaseView):
         # Αρχικό γέμισμα της λίστας
         self._refresh_list()
         
+    def _format_backup_name(self, filename: str) -> str:
+        # Μετατροπή του ονόματος αρχείου backup σε φιλική μορφή ημερομηνίας/ώρας
+        try:
+            if filename.startswith("backup_") and filename.endswith(".db"):
+                # Αφαίρεση προθέματος και κατάληξης: backup_YYYYMMDD_HHMMSS.db -> YYYYMMDD_HHMMSS
+                parts = filename.replace("backup_", "").replace(".db", "").split("_")
+                if len(parts) == 2:
+                    date_str, time_str = parts[0], parts[1]
+                    day = date_str[6:8]
+                    month = date_str[4:6]
+                    year = date_str[0:4]
+                    hour = time_str[0:2]
+                    minute = time_str[2:4]
+                    second = time_str[4:6]
+                    return f"{day}/{month}/{year}, {hour}:{minute}:{second}"
+        except Exception:
+            pass
+        return filename
+
     def _refresh_list(self) -> None:
         # Καθαρισμός και επαναφόρτωση της λίστας των backups
         self.listbox_backups.delete(0, "end")
-        backups_list = backup.get_available_backups()
-        for filename in backups_list:
-            self.listbox_backups.insert("end", filename)
+        self.backups_list = backup.get_available_backups()
+        for filename in self.backups_list:
+            display_name = self._format_backup_name(filename)
+            self.listbox_backups.insert("end", display_name)
             
     def _create_backup(self) -> None:
         # Κλήση της συνάρτησης δημιουργίας backup και ανανέωση της λίστας
@@ -549,19 +581,39 @@ class BackupSettingsView(BaseView):
             self._refresh_list()
             
     def _restore_backup(self) -> None:
-        # Επαναφορά της βάσης από το επιλεγμένο αρχείο της λίστας
+        # Επαναφορά της βάσης από το επιλεγμένο αρχείο της λίστα ή χειροκίνητα
         selection = self.listbox_backups.curselection()
+        
         if not selection:
-            messagebox.showwarning("Προσοχή", "Παρακαλώ επιλέξτε ένα αρχείο backup από τη λίστα για επαναφορά.")
-            return
+            # Αν δεν έχει επιλεγεί αρχείο, ρωτάμε τον χρήστη αν θέλει να βρει το αρχείο χειροκίνητα
+            choose_manual = messagebox.askyesno(
+                "Επιλογή Αρχείου",
+                "Δεν έχετε επιλέξει κάποιο αρχείο από τη λίστα.\n"
+                "Θέλετε να αναζητήσετε και να επιλέξετε ένα αρχείο βάσης δεδομένων (.db) από τον υπολογιστή σας;"
+            )
+            if not choose_manual:
+                return
             
-        selected_file = self.listbox_backups.get(selection[0])
-        backup_file_path = os.path.join(backup.BACKUP_DIR, selected_file)
+            # Άνοιγμα Windows Explorer για επιλογή αρχείου
+            selected_file_path = filedialog.askopenfilename(
+                title="Επιλογή αρχείου βάσης δεδομένων για Επαναφορά",
+                filetypes=[("Database Files", "*.db"), ("All Files", "*.*")]
+            )
+            if not selected_file_path:
+                return
+                
+            backup_file_path = selected_file_path
+            display_name = os.path.basename(selected_file_path)
+        else:
+            # Αν έχει γίνει επιλογή από τη λίστα, παίρνουμε το αντίστοιχο αρχείο
+            selected_file = self.backups_list[selection[0]]
+            backup_file_path = os.path.join(backup.BACKUP_DIR, selected_file)
+            display_name = selected_file
         
         # Ερώτηση επιβεβαίωσης στον χρήστη
         confirm = messagebox.askyesno(
             "Επιβεβαίωση Επαναφοράς", 
-            f"Είστε σίγουροι ότι θέλετε να επαναφέρετε τη βάση δεδομένων από το αρχείο:\n{selected_file}?\n\n"
+            f"Είστε σίγουροι ότι θέλετε να επαναφέρετε τη βάση δεδομένων από το αρχείο:\n{display_name}?\n\n"
             "ΠΡΟΣΟΧΗ: Όλα τα τρέχοντα δεδομένα θα αντικατασταθούν. Η εφαρμογή θα κλείσει αυτόματα μετά την επαναφορά."
         )
         
