@@ -285,15 +285,8 @@ class MainWindow:
         )
         btn_prev.pack(side="left")
 
-        self.date_entry = DateEntry(
-            self.toolbar_frame,
-            width=12,
-            date_pattern="dd/mm/yyyy",
-            background=self.color_sidebar,
-            foreground="white",
-            selectbackground=self.color_accent,
-            font=("Arial", 10),
-        )
+        self.date_entry = DateEntry(self.toolbar_frame,width=12,date_pattern="dd/mm/yyyy",background=self.color_sidebar,foreground="white",selectbackground=self.color_accent,font=("Arial", 10),)
+        self.date_entry.bind("<<DateEntryPopup>>", lambda event: event.widget._top_cal.overrideredirect(False))
         self.date_entry.pack(side="left", padx=4)
         self.date_entry.bind("<<DateEntrySelected>>", lambda e: self._refresh_agenda())
 

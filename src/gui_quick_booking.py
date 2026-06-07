@@ -173,6 +173,7 @@ class QuickBookingWindow:
 
         tk.Label(dt_frame, text="Ημερομηνία:", bg=self.color_white, font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.date_entry = DateEntry(dt_frame, width=12, date_pattern="dd/mm/yyyy", font=("Arial", 10))
+        self.date_entry.bind("<<DateEntryPopup>>", lambda event: event.widget._top_cal.overrideredirect(False))
         self.date_entry.grid(row=1, column=0, sticky="ew", padx=(0, 5))
         self.date_entry.bind("<<DateEntrySelected>>", self._refresh_time_slots)
 
