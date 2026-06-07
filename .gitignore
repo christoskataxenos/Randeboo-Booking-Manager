@@ -29,10 +29,3 @@ backups/
 
 # PyInstaller & build outputs
 build/
-
-
-# Office Documents (of course we do not commit Word docs)
-*.docx
-*.doc
-~$*.docx
-~$*.doc
