@@ -29,8 +29,6 @@ backups/
 
 # PyInstaller & build outputs
 build/
-dist/
-*.spec
 
 
 # Office Documents (of course we do not commit Word docs)
