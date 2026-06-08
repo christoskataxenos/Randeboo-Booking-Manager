@@ -16,8 +16,6 @@
 
 ΚΛΑΣΗ: MainWindow
 
-ΡΟΗ ΔΕΔΟΜΕΝΩΝ:
-    User Authentication → MainWindow → Navigation (Sidebar) → Content Panels
 
 ΠΕΡΙΟΡΙΣΜΟΙ ΣΧΕΔΙΑΣΗΣ:
     - minsize(980, 680): Υποχρεωτικό ελάχιστο μέγεθος για να μην "σπάει" το UI.

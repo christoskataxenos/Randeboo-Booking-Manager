@@ -21,12 +21,27 @@
 
 import logging
 import os
+import sys
 import database
 import backup
 import tkinter as tk
 from tkinter import messagebox
 from gui_login import LoginWindow
 from gui_main import MainWindow
+
+def resource_path(relative_path: str) -> str:
+    """
+    Επιστρέφει την κατάλληλη απόλυτη διαδρομή για ένα αρχείο.
+    Λειτουργεί τόσο σε περιβάλλον ανάπτυξης (development) όσο και
+    μέσα στο εκτελέσιμο (PyInstaller).
+    """
+    # Έλεγχος αν τρέχουμε μέσα από PyInstaller
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+        
+    # Σε περιβάλλον ανάπτυξης
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
+
 
 def main() -> None:
     """
@@ -80,8 +95,8 @@ def main() -> None:
     # Φόρτωση εικονιδίου εφαρμογής με υποστήριξη cross-platform
     # Δοκιμάζουμε πρώτα το αρχείο .ico για Windows, και ως fallback το .png για άλλα λειτουργικά συστήματα
     try:
-        icon_path_ico = os.path.join(os.path.dirname(__file__), "randeboo.ico")
-        icon_path_png = os.path.join(os.path.dirname(__file__), "randeboo.png")
+        icon_path_ico = resource_path("randeboo.ico")
+        icon_path_png = resource_path("randeboo.png")
         
         if os.path.exists(icon_path_ico):
             root.iconbitmap(icon_path_ico)

@@ -11,7 +11,7 @@ a = Analysis(
     ['src\\main.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/randeboo.ico', 'src'), ('src/randeboo.png', 'src')] + datas_holidays,
+    datas=[('src/randeboo.ico', '.'), ('src/randeboo.png', '.')] + datas_holidays,
     hiddenimports=hidden_imports_holidays,
     hookspath=[],
     hooksconfig={},
@@ -25,8 +25,9 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
-    [],
-    exclude_binaries=True,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     name='RandeBoo',
     debug=False,
     bootloader_ignore_signals=False,
@@ -39,13 +40,4 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['src\\randeboo.ico'],
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='RandeBoo',
 )

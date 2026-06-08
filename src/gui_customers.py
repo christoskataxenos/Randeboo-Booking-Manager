@@ -11,14 +11,7 @@
 ΣΚΟΠΟΣ: Διαχείριση Πελατών — CRUD (Create, Read, Update, Delete)
 =============================================================================
 """
-"""
-ANCHOR INDEX (CTRL+F):
-UI_COLOR   → Όλα τα χρώματα (bg/fg)
-UI_LAYOUT  → Στοίχιση, padding, pack/grid/place
-UI_FONT    → Γραμματοσειρές, μεγέθη, bold
-UI_BUTTON  → Κουμπιά & hover effects
-UI_SECTION → Μεγάλα UI blocks (π.χ. Search Bar, Customer Table, Action Buttons)
-"""
+
 
 import tkinter as tk
 from tkinter import ttk
