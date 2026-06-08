@@ -91,6 +91,7 @@ Finalized_files/
 │   ├── gui_search.py                           # Οθόνη προηγμένης ενοποιημένης αναζήτησης
 │   ├── gui_settings.py                         # Πάνελ ρυθμίσεων επιχείρησης, ωραρίου & ασφάλειας
 │   ├── gui_stats.py                            # Οθόνη στατιστικών αναλύσεων και γραφημάτων
+│   ├── seed_db.py                              # Παραγωγή εικονικών δεδομένων (Database Seeding)
 │   ├── randeboo.ico                            # Εικονίδιο εφαρμογής (ICO format για Windows)
 │   └── randeboo.png                            # Εικονίδιο εφαρμογής (PNG format για cross-platform)
 ├── requirements.txt                            # Εξωτερικές βιβλιοθήκες εφαρμογής
