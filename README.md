@@ -180,6 +180,8 @@ Finalized_files/
 
 ## GitHub Release & Λήψη Εφαρμογής (Download)
 
-Μπορείτε να κατεβάσετε το έτοιμο εκτελέσιμο αρχείο της εφαρμογής (`RandeBoo.exe`) απευθείας από τη σελίδα των **[GitHub Releases](https://github.com/christoskataxenos/Randeboo-Booking-Manager/releases)**.
+Μπορείτε να κατεβάσετε το έτοιμο εκτελέσιμο αρχείο της εφαρμογής (`RandeBoo.exe`) απευθείας από τη σελίδα των **[GitHub Releases](https://github.com/christoskataxenos/Randeboo-Booking-Manager/releases)**:
+
+[![Download RandeBoo.exe](https://img.shields.io/badge/Download-RandeBoo.exe-0A3D62?style=for-the-badge&logo=github&logoColor=white)](https://github.com/christoskataxenos/Randeboo-Booking-Manager/releases)
 
 
